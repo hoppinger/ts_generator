@@ -1,0 +1,11 @@
+services:
+  ts_generator_metatag.component_generator.field.metatag_base:
+    class: Drupal\ts_generator_metatag\ComponentGenerator\MetatagBaseFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.metatag.tag']
+  ts_generator_metatag.component_generator.field.metatag:
+    class: Drupal\ts_generator_metatag\ComponentGenerator\MetatagFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type', '@plugin.manager.metatag.tag']

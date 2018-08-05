@@ -1,0 +1,5 @@
+services:
+  ts_generator.commands:
+    class: \Drupal\ts_generator\Commands\TsGeneratorCommands
+    tags:
+      - { name: drush.command }

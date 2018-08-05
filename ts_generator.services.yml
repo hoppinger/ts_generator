@@ -1,0 +1,85 @@
+services:
+  ts_generator.generator:
+    class: Drupal\ts_generator\Generator
+    arguments: [{  }]
+  ts_generator.component_generator.language_manager:
+    class: Drupal\ts_generator\ComponentGenerator\Manager\LanguageManagerGenerator
+    tags:
+      - { name: ts_generator_component }
+  ts_generator.component_generator.entity_type_manager:
+    class: Drupal\ts_generator\ComponentGenerator\Manager\EntityTypeManagerGenerator
+    tags:
+      - { name: ts_generator_component }
+  ts_generator.component_generator.entity:
+    class: Drupal\ts_generator\ComponentGenerator\Entity\EntityGenerator
+    tags:
+      - { name: ts_generator_component }
+    arguments: ['@entity_type.manager', '@entity_field.manager']
+  ts_generator.component_generator.field.entity_bundle:
+    class: Drupal\ts_generator\ComponentGenerator\Entity\EntityBundleGenerator
+    tags:
+      - { name: ts_generator_component }
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@entity_type.repository']
+  ts_generator.component_generator.field:
+    class: Drupal\ts_generator\ComponentGenerator\Field\FieldGenerator
+    tags:
+      - { name: ts_generator_component }
+    arguments: ['@plugin.manager.field.field_type']
+
+  ts_generator.component_generator.data.string:
+    class: Drupal\ts_generator\ComponentGenerator\Data\StringGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+  ts_generator.component_generator.data.number:
+    class: Drupal\ts_generator\ComponentGenerator\Data\NumberGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+  ts_generator.component_generator.data.boolean:
+    class: Drupal\ts_generator\ComponentGenerator\Data\BooleanGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+  ts_generator.component_generator.data.filter_format:
+    class: Drupal\ts_generator\ComponentGenerator\Data\FilterFormatGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@entity_type.manager']
+  ts_generator.component_generator.data.date_time:
+    class: Drupal\ts_generator\ComponentGenerator\Data\DateTimeGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@entity_type.manager']
+  ts_generator.component_generator.data.any:
+    class: Drupal\ts_generator\ComponentGenerator\Data\AnyGenerator
+    tags:
+      - { name: ts_generator_component }
+
+  ts_generator.component_generator.field.language:
+    class: Drupal\ts_generator\ComponentGenerator\Field\LanguageFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type', '@language_manager']
+  ts_generator.component_generator.field.timestamp:
+    class: Drupal\ts_generator\ComponentGenerator\Field\TimestampFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type']
+  ts_generator.component_generator.field.string:
+    class: Drupal\ts_generator\ComponentGenerator\Field\StringFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type']
+  ts_generator.component_generator.field.text:
+    class: Drupal\ts_generator\ComponentGenerator\Field\TextFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type']
+  ts_generator.component_generator.field.path:
+    class: Drupal\ts_generator\ComponentGenerator\Field\PathFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type']
+  ts_generator.component_generator.field.entity_reference:
+    class: Drupal\ts_generator\ComponentGenerator\Field\EntityReferenceFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type', '@entity_type.manager']

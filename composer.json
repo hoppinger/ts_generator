@@ -1,0 +1,22 @@
+{
+  "name": "hoppinger/ts_generator",
+  "description": "Drupal module to generate TypeScript code based on the REST Resources",
+  "type": "drupal-module",
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "homepage": "https://github.com/hoppinger/ts_generator",
+  "authors": [
+    {
+      "name": "Rolf van de Krol",
+      "role": "Maintainer"
+    }
+  ],
+  "require": {},
+    "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
+  }
+}

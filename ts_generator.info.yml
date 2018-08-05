@@ -1,0 +1,7 @@
+name: TS Generator
+type: module
+description: Generate TypeScript code based on the REST Resources
+package: Hoppinger
+core: 8.x
+dependencies:
+  - rest

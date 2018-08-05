@@ -1,0 +1,8 @@
+name: TS Generator Metatag
+type: module
+description: Generate TypeScript code for metatag
+package: Custom
+core: 8.x
+dependencies:
+  - ts_generator
+  - metatag
