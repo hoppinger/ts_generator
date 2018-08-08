@@ -39,7 +39,6 @@ This is an example of how you could use those types. You are not limited to this
 ```ts
 import {
   InputEntity,
-  ParsedEntity,
   ParsedInputEntity,
 } from "./generated/types"
 
