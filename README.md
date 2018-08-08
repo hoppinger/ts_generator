@@ -46,7 +46,7 @@ import {
 import {
   input_entity_parser,
   input_entity_guard
-} from "./generated/types"
+} from "./generated/parser"
 
 export type Result<T> = T | "error"
 
