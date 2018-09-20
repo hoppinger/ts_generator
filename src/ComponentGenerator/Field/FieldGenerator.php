@@ -15,6 +15,7 @@ class FieldGenerator extends GeneratorBase {
   use PropertiesGenerator;
 
   protected $supportedFieldType;
+  protected $needsItemGuard = false;
 
   /**
    * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
@@ -83,7 +84,8 @@ class FieldGenerator extends GeneratorBase {
       Container::underscore($name) . '_parser',
       $mapping,
       $settings,
-      $result
+      $result,
+      $this->needsItemGuard ? (Container::underscore($name) . '_guard') : null
     );
   }
 
@@ -118,6 +120,7 @@ class FieldGenerator extends GeneratorBase {
 
     $item_target_type = $componentResult->getContext('item')->getComponent('target_type');
     $item_parser = $componentResult->getContext('item')->getComponent('parser');
+    $item_guard = $componentResult->getContext('item')->getComponent('guard');
 
     if ($object->getFieldStorageDefinition()->getCardinality() == 1) {
       if ($object->isRequired()) {
@@ -125,12 +128,12 @@ class FieldGenerator extends GeneratorBase {
         return $result->setComponent('parser/' . $name, 'const ' . $name . ' = (f: ' . $type . '): ' . $target_type . ' => ' . $item_parser . '(f[0])');
       } else {
         $name = 'singular_optional_' . Container::underscore($this->getName($object, $settings, $result, $componentResult)) . '_parser';
-        return $result->setComponent('parser/' . $name, 'const ' . $name . ' = (f: ' . $type . '): ' . $target_type . ' => f && f.length > 0 ? ' . $item_parser . '(f[0]) : null');
+        return $result->setComponent('parser/' . $name, 'const ' . $name . ' = (f: ' . $type . '): ' . $target_type . ' => f && f.length > 0' . ($item_guard ? ' && ' .  $item_guard . '(f[0])' : '') . ' ? ' . $item_parser . '(f[0]) : null');
       }
     } else {
       // parse from FieldItemList to Immutable.List
       $name = 'plural_' . Container::underscore($this->getName($object, $settings, $result, $componentResult)) . '_parser';
-      return $result->setComponent('parser/' . $name, 'const ' . $name . " =\n  (f: " . $type . '): ' . $target_type . " =>\n    :/immutable/List:<" . $item_target_type . '>(f.map(i => ' . $item_parser . '(i)))');
+      return $result->setComponent('parser/' . $name, 'const ' . $name . " =\n  (f: " . $type . '): ' . $target_type . " =>\n    :/immutable/List:<" . $item_target_type . '>(f' . ($item_guard ? '.filter(i => ' .  $item_guard . '(i))' : '') . '.map(i => ' . $item_parser . '(i)))');
     }
   }
 

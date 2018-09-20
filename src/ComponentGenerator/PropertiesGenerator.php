@@ -208,7 +208,56 @@ trait PropertiesGenerator {
     return "({\n" . implode(",\n", $result) . "\n})";
   }
 
-  protected function generatePropertiesComponentResult($properties, $type_name, $target_type_name, $parser_name, $mapping, Settings $settings, Result $result) {
+  protected function generatePropertiesGuard(array $properties, $type_name, $mapping = NULL) {
+    return '(t: any): t is ' . $type_name . ' => ' . $this->generatePropertiesGuardContent($properties, $mapping);
+  }
+
+  protected function generatePropertiesGuardContent($properties, $mapping = NULL) {
+    
+    if (!isset($mapping)) {
+      $mapping = $this->getDefaultMapping($properties);
+    }
+
+    $guards = [];
+
+    if (!is_string($mapping)) {
+      foreach ($mapping as $property_target_key => $property_key) {
+        if (!is_numeric($property_target_key)) {
+          continue;
+        }
+
+        if (is_string($property_key) && isset($properties[$property_key])) {
+          continue;
+        }
+
+        if (!is_string($property_key)) {
+          $guard = $property_key->getComponent('guard');
+          if (!$guard) {
+            continue;
+          }
+
+          $guards[] = $guard . '(t)';
+        }
+      }
+    }
+
+    foreach ($properties as $property_key => $property) {
+      if (!is_string($property)) {
+        $guard = $property->getComponent('guard');
+        if (!$guard) {
+          continue;
+        }
+
+        $guards[] = '(t.' . $property_key . ' !== undefined)';
+        $guards[] = $guard . '(t.' . $property_key . ')';
+      }
+    }
+
+
+    return $guards ? implode (' && ', $guards) : 'true';
+  }
+
+  protected function generatePropertiesComponentResult($properties, $type_name, $target_type_name, $parser_name, $mapping, Settings $settings, Result $result, $guard_name = null) {
     if (!isset($mapping)) {
       $mapping = $this->getDefaultMapping($properties);
     }
@@ -239,6 +288,16 @@ trait PropertiesGenerator {
           'const ' . $parser_name . ' = ' . $this->generatePropertiesParser($properties, $type, $target_type, $mapping)
         )
       );
+
+      if ($guard_name) {
+        $guard = $componentResult->setComponent(
+          'guard',
+          $result->setComponent(
+            'parser/' . $guard_name,
+            'const ' . $guard_name . ' = ' . $this->generatePropertiesGuard($properties, $type, $mapping)
+          )
+        );
+      }
     }
 
     return $componentResult;
