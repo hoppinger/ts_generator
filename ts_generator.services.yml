@@ -73,6 +73,11 @@ services:
     tags:
       - { name: ts_generator_component, priority: 10 }
     arguments: ['@plugin.manager.field.field_type']
+  ts_generator.component_generator.field.file_uri:
+    class: Drupal\ts_generator\ComponentGenerator\Field\FileUriFieldGenerator
+    tags:
+      - { name: ts_generator_component, priority: 10 }
+    arguments: ['@plugin.manager.field.field_type']
   ts_generator.component_generator.field.path:
     class: Drupal\ts_generator\ComponentGenerator\Field\PathFieldGenerator
     tags:
