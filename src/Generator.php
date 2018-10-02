@@ -24,7 +24,7 @@ class Generator implements GeneratorInterface {
       return $generator->generate($object, $settings, $result);
     }
 
-    throw new \Exception("No supported Generator for " . var_export($object, TRUE));
+    throw new \Exception("No supported Generator for " . get_class($object));
   }
 
   public function supportsGeneration($object) {

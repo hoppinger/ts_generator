@@ -1,13 +1,17 @@
 services:
+  plugin.manager.ts_generator_api_provider:
+    class: Drupal\ts_generator\ApiProviderPluginManager
+    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler']
   ts_generator.generator:
     class: Drupal\ts_generator\Generator
     arguments: [{  }]
+
   ts_generator.component_generator.language_manager:
     class: Drupal\ts_generator\ComponentGenerator\Manager\LanguageManagerGenerator
     tags:
       - { name: ts_generator_component }
-  ts_generator.component_generator.entity_type_manager:
-    class: Drupal\ts_generator\ComponentGenerator\Manager\EntityTypeManagerGenerator
+  ts_generator.component_generator.rest_entity_api:
+    class: Drupal\ts_generator\ComponentGenerator\Api\RestEntityGenerator
     tags:
       - { name: ts_generator_component }
   ts_generator.component_generator.entity:

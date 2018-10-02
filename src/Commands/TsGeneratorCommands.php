@@ -31,13 +31,17 @@ class TsGeneratorCommands extends DrushCommands {
     $working_directory = dirname($filename);
     $settings = Settings::loadFile($filename);
 
-    /** @var \Drupal\ts_generator\GeneratorInterface $generator */
-    $generator = \Drupal::service('ts_generator.generator');
-
-    $entity_type_manager = \Drupal::entityTypeManager();
+    /** @var \Drupal\ts_generator\ApiProviderPluginManager $plugin_manager */
+    $plugin_manager = \Drupal::service('plugin.manager.ts_generator_api_provider');
 
     $result = new Result();
-    $generator->generate($entity_type_manager, $settings, $result);
+
+    $plugins = $settings->getPlugins();
+    foreach ($plugins as $plugin_name => $plugin_settings) {
+      /** @var \Drupal\ts_generator\Plugin\ApiProviderInterface $plugin */
+      $plugin = $plugin_manager->createInstance($plugin_name, $plugin_settings);
+      $plugin->generate($settings, $result);
+    }
 
     $target_directory = $working_directory . '/' . $settings->get('target_directory');
     $result->write($target_directory);
