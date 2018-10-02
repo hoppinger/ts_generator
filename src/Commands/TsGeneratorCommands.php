@@ -54,7 +54,13 @@ class TsGeneratorCommands extends DrushCommands {
     $execution_plan = [];
 
     foreach ($plugins_to_execute as $wildcard => $plugin_settings) {
-      foreach ($this->matchingPlugins($wildcard, array_keys($available_plugins)) as $plugin_name) {
+      $matching_plugins = $this->matchingPlugins($wildcard, array_keys($available_plugins));
+
+      if (empty($matching_plugins)) {
+        throw new \Exception("No plugin found for " . $wildcard);
+      }
+
+      foreach ($matching_plugins as $plugin_name) {
         if (isset($execution_plan[$plugin_name])) {
           continue;
         }
