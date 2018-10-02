@@ -241,16 +241,16 @@ class EntityGenerator extends GeneratorBase {
       if ($field_definition->isInternal() || $field_definition->getType() == 'path') {
         continue;
       }
-      $conditions[] = '  (t as any).' . $key . ' !== undefined';
+      $conditions[] = '  t.' . $key . ' !== undefined';
 
       if ($key == $object->getKey('bundle') && ($bundle_entity_type = $object->getBundleEntityType())) {
-        $conditions[] = '  (t as any).' . $key .'[0].target_type == ' . json_encode($bundle_entity_type);
+        $conditions[] = '  t.' . $key .'[0].target_type == ' . json_encode($bundle_entity_type);
       }
     }
 
     return $result->setComponent(
       'parser/' . $name,
-      'const ' . $name . ' = (t: :types/Entity:): t is ' . $componentResult->getComponent('type') .
+      'const ' . $name . ' = (t: any): t is ' . $componentResult->getComponent('type') .
       " => (\n" . implode(" &&\n", $conditions) . "\n)"
     );
   }
