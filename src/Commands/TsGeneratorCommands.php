@@ -50,8 +50,6 @@ class TsGeneratorCommands extends DrushCommands {
   protected function planExecution(Settings $settings, ApiProviderPluginManager $plugin_manager) {
     $available_plugins = $plugin_manager->getDefinitions();
 
-    var_dump($available_plugins);
-
     $plugins_to_execute = $settings->getPlugins();
     $execution_plan = [];
 

@@ -5,8 +5,6 @@ namespace Drupal\ts_generator\Plugin\TsGenerator\ApiProvider;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\ts_generator\GeneratorInterface;
 use Drupal\ts_generator\Plugin\ApiProviderBase;
-use Drupal\ts_generator\Result;
-use Drupal\ts_generator\Settings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
