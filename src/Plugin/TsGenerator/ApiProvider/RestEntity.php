@@ -37,10 +37,6 @@ class RestEntity extends ApiProviderBase {
     );
   }
 
-  public function generate(Settings $settings, Result $result) {
-    $componentResult = $this->generator->generate($this, $settings, $result);
-  }
-
   public function getEntityTypes() {
     $entity_types = [];
 

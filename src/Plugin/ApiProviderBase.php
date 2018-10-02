@@ -5,6 +5,8 @@ namespace Drupal\ts_generator\Plugin;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\ts_generator\GeneratorInterface;
+use Drupal\ts_generator\Result;
+use Drupal\ts_generator\Settings;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class ApiProviderBase extends PluginBase implements ContainerFactoryPluginInterface, ApiProviderInterface {
@@ -25,5 +27,9 @@ abstract class ApiProviderBase extends PluginBase implements ContainerFactoryPlu
       $plugin_definition,
       $container->get('ts_generator.generator')
     );
+  }
+
+  public function generate(Settings $settings, Result $result) {
+    return $this->generator->generate($this, $settings, $result);
   }
 }
