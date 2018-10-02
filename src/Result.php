@@ -2,41 +2,106 @@
 
 namespace Drupal\ts_generator;
 
+/**
+ * Holds the objects that represent the end result of the generation and write them to disk.
+ */
 class Result {
+  /**
+   * The generated components of the end result
+   *
+   * @var string[]
+   */
   protected $components;
+
+  /**
+   * Temporary storage that is shared over all component generators
+   *
+   * @var mixed[]
+   */
   protected $context;
 
+  /**
+   * Result constructor.
+   */
   public function __construct() {
     $this->components = [];
     $this->context = [];
   }
 
+  /**
+   * Get all component definitions.
+   *
+   * @return string[]
+   */
+  public function getComponents() {
+    return $this->components;
+  }
+
+  /**
+   * Get a component definition for a certain key.
+   *
+   * @param string $key
+   * @return string
+   */
+  public function getComponent($key) {
+    return $this->components[$key];
+  }
+
+  /**
+   * Set a component definition for a certain key.
+   *
+   * Put at least one slash (/) character in the key. The part before the last slash is in the written files the
+   * filename, the part after the last slash is the name of the component in that file.
+   *
+   * The return value is the identifier that can be used to reference this component in definition of other components.
+   *
+   * @param string $key
+   * @param string $definition
+   * @return string
+   */
   public function setComponent($key, $definition) {
     $this->components[$key] = $definition;
 
     return ':' . $key . ':';
   }
 
-  public function getComponent($key) {
-    return $this->components[$key];
-  }
-
+  /**
+   * Check if a component definition exists for a certain key.
+   *
+   * @param string $key
+   * @return bool
+   */
   public function hasComponent($key) {
     return isset($this->components[$key]);
   }
 
-  public function getComponents() {
-    return $this->components;
-  }
-
+  /**
+   * Get the context value for a certain key.
+   *
+   * Returns NULL when the context is not set.
+   *
+   * @param string $key
+   * @return mixed|null
+   */
   public function getContext($key) {
     return isset($this->context[$key]) ? $this->context[$key] : NULL;
   }
 
+  /**
+   * Set the context value for a certain key.
+   *
+   * @param string $key
+   * @param mixed $value
+   */
   public function setContext($key, $value) {
     $this->context[$key] = $value;
   }
 
+  /**
+   * Get a list of components, grouped by filename.
+   *
+   * @return string[][]
+   */
   private function groupedComponents() {
     $groups = [];
 
@@ -55,9 +120,17 @@ class Result {
     return $groups;
   }
 
-  // a/b/c, a/b/e => ./d
-  // a/b/c, a/e => ../d
-  // a/b/c/d, a/e => ../../e
+  /**
+   * Resolve how to reference a file from another file.
+   *
+   * a/b/c, a/b/e => ./d
+   * a/b/c, a/e => ../d
+   * a/b/c/d, a/e => ../../e
+   *
+   * @param string $from
+   * @param string $to
+   * @return string
+   */
   private function resolveFilename($from, $to) {
     if (substr($to, 0, 1) == '/') {
       return substr($to, 1);
@@ -79,6 +152,15 @@ class Result {
     return implode('/', array_fill(0, count($_from) - $i - 1, '..')) . '/' . implode('/', array_slice($_to, $i));
   }
 
+  /**
+   * Generate the file data from the grouped components.
+   *
+   * The return value is an associative array with the filename as keys and file contents as values. The file contents
+   * is represented as an associative array with keys 'imports' (represents the imports from other files) and
+   * 'components' (represents the components in the file).
+   *
+   * @return array[]
+   */
   private function fileData() {
     $groups = $this->groupedComponents();
 
@@ -140,6 +222,11 @@ class Result {
     return $files;
   }
 
+  /**
+   * Convert the generated file data to strings.
+   *
+   * @return string[]
+   */
   private function files() {
     $file_data = $this->fileData();
 
@@ -174,6 +261,14 @@ class Result {
     return $files;
   }
 
+  /**
+   * Writes to disk.
+   *
+   * Writes all the generated files to disk in the specified directory.
+   *
+   * @param string $target
+   *   The path to the directory where the generated files should be placed.
+   */
   public function write($target) {
     $files = $this->files();
 
