@@ -10,10 +10,16 @@ services:
     class: Drupal\ts_generator\ComponentGenerator\Manager\LanguageManagerGenerator
     tags:
       - { name: ts_generator_component }
+
   ts_generator.component_generator.rest_entity_api:
     class: Drupal\ts_generator\ComponentGenerator\Api\RestEntityGenerator
     tags:
       - { name: ts_generator_component }
+  ts_generator.component_generator.rest_view_api:
+    class: Drupal\ts_generator\ComponentGenerator\Api\RestViewGenerator
+    tags:
+      - { name: ts_generator_component }
+
   ts_generator.component_generator.entity:
     class: Drupal\ts_generator\ComponentGenerator\Entity\EntityGenerator
     tags:
@@ -92,3 +98,17 @@ services:
     tags:
       - { name: ts_generator_component, priority: 10 }
     arguments: ['@plugin.manager.field.field_type', '@entity_type.manager']
+
+  ts_generator.component_generator.views.view_executable:
+    class: Drupal\ts_generator\ComponentGenerator\Views\ViewExecutableGenerator
+    tags:
+      - { name: ts_generator_component }
+  ts_generator.component_generator.views.serializer:
+    class: Drupal\ts_generator\ComponentGenerator\Views\SerializerGenerator
+    tags:
+      - { name: ts_generator_component }
+  ts_generator.component_generator.views.data_entity_row:
+    class: Drupal\ts_generator\ComponentGenerator\Views\DataEntityRowGenerator
+    tags:
+      - { name: ts_generator_component }
+    arguments: ['@entity_type.manager']
