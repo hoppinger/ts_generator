@@ -23,7 +23,7 @@ class DateTimeGenerator extends DataGeneratorBase {
     /** @var \Drupal\Core\TypedData\DataDefinitionInterface $object */
     $base_parser = $result->setComponent(
       'parser/moment_parser',
-      'const moment_parser = (t: string): :/moment/Moment*:.Moment => :/moment/Moment*:(t)'
+      'const moment_parser = (t: string): :/moment/Moment*:.Moment => :/moment/Moment*:.utc(t).local()'
     );
     $componentResult->setComponent('base_parser', $base_parser);
 
