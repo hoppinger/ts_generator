@@ -35,18 +35,18 @@ class EntityReferenceFieldGenerator extends FieldGenerator {
   protected function getItemProperties($object, Settings $settings, Result $result, ComponentResult $component_result) {
     $properties = parent::getItemProperties($object, $settings, $result, $component_result);
 
-    $properties['target_type'] = 'string';
-    $properties['target_uuid'] = 'string';
+    $properties['target_type?'] = 'string';
+    $properties['target_uuid?'] = 'string';
 
     if ($this->hasUrl($object)) {
-      $properties['url'] = 'string';
+      $properties['url?'] = 'string';
     }
 
     return $properties;
   }
 
   public function getItemMapping($object, $properties, Settings $settings, Result $result, ComponentResult $componentResult) {
-    if (isset($properties['url'])) {
+    if (isset($properties['url']) || isset($properties['url?'])) {
       return ['id' => 'target_id', 'url'];
     } else {
       return 'target_id';
