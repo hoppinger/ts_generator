@@ -28,7 +28,7 @@ trait PropertiesGenerator {
           continue;
         }
 
-        if (is_string($property_key) && isset($properties[$property_key])) {
+        if (is_string($property_key) && (isset($properties[$property_key]) || isset($properties[$property_key . '?']))) {
           continue;
         }
 
@@ -42,7 +42,13 @@ trait PropertiesGenerator {
 
     $result_properties = [];
     foreach ($properties as $key => $property) {
-      $result_properties[$key] = $this->generatePropertyType($properties, $key, 'type');
+      $optional = false;
+      if (substr($key, -1, 1) == '?') {
+        $key = substr($key, 0, -1);
+        $optional = true;
+      }
+
+      $result_properties[$optional ? ($key . '?') : $key] = $this->generatePropertyType($properties, $key, 'type');
     }
 
     return $this->formatObject($combinators, $result_properties);
@@ -72,13 +78,26 @@ trait PropertiesGenerator {
   }
 
   protected function generatePropertyType(array $properties, $property_key, $component = 'type') {
+    if (!isset($properties[$property_key])) {
+      $property_key .= '?';
+    }
+
     $property_data = is_string($properties[$property_key]) ? $properties[$property_key] : $properties[$property_key]->getComponent($component);
     $property_data = $this->cleanupPropertyType($property_data);
     return $property_data;
   }
 
   protected function getDefaultMapping(array $properties, $mapping = NULL) {
-    return array_combine(array_keys($properties), array_keys($properties));
+    $keys = array();
+    foreach (array_keys($properties) as $key) {
+      if (substr($key, -1, 1) == '?') {
+        $keys[] = substr($key, 0, -1);
+      } else {
+        $keys[] = $key;
+      }
+    }
+
+    return array_combine($keys, $keys);
   }
 
   protected function generatePropertiesTargetObject(array $properties, $mapping = NULL) {
@@ -87,7 +106,7 @@ trait PropertiesGenerator {
     }
 
     if (is_string($mapping)) {
-      if (isset($properties[$mapping])) {
+      if (isset($properties[$mapping]) || isset($properties[$mapping . '?'])) {
         return $this->generatePropertyType($properties, $mapping, 'target_type');
       } else {
         $mapping = [$mapping];
@@ -99,8 +118,9 @@ trait PropertiesGenerator {
 
     foreach ($mapping as $property_target_key => $property_key) {
       if (is_numeric($property_target_key)) {
-        if (is_string($property_key) && isset($properties[$property_key])) {
-          $result[$property_key] = $this->generatePropertyType($properties, $property_key, 'target_type');
+        if (is_string($property_key) && (isset($properties[$property_key]) || isset($properties[$property_key . '?']))) {
+          $optional = !isset($properties[$property_key]);
+          $result[$optional ? ($property_key . '?') : $property_key] = $this->generatePropertyType($properties, $property_key, 'target_type');
         } else {
           if (is_string($property_key)) {
             $combinators[] = $property_key;
@@ -109,8 +129,9 @@ trait PropertiesGenerator {
           }
         }
       } else {
-        if (is_string($property_key) && isset($properties[$property_key])) {
-          $result[$property_target_key] = $this->generatePropertyType($properties, $property_key, 'target_type');
+        if (is_string($property_key) && (isset($properties[$property_key]) || isset($properties[$property_key . '?']))) {
+          $optional = !isset($properties[$property_key]);
+          $result[$optional ? ($property_target_key . '?') : $property_target_key] = $this->generatePropertyType($properties, $property_key, 'target_type');
         } else {
           if (is_string($property_key)) {
             $result[$property_target_key] = $property_key;
@@ -132,19 +153,27 @@ trait PropertiesGenerator {
   }
 
   protected function generatePropertyParser(array $properties, $property_key) {
-    if (is_string($properties[$property_key])) {
-      if (!preg_match('/^[a-zA-Z_$][0-9a-zA-Z_$]*$/', $property_key)) {
-        return 't[' . json_encode($property_key) . ']';
-      } else {
-        return 't.' . $property_key;
-      }
-    } else {
-      if (!preg_match('/^[a-zA-Z_$][0-9a-zA-Z_$]*$/', $property_key)) {
-        return $properties[$property_key]->getComponent('parser') . '(t[' . json_encode($property_key) . '])';
-      } else {
-        return $properties[$property_key]->getComponent('parser') . '(t.' . $property_key . ')';
-      }
+    $_property_key = $property_key;
+    $optional = false;
+    if (!isset($properties[$property_key])) {
+      $_property_key .= '?';
+      $optional = true;
     }
+
+    $property_accessor = 't.' . $property_key;
+    if (!preg_match('/^[a-zA-Z_$][0-9a-zA-Z_$]*$/', $property_key)) {
+      $property_accessor = 't[' . json_encode($property_key) . ']';
+    }
+
+    if (is_string($properties[$_property_key])) {
+      return $property_accessor;
+    }
+
+    if ($optional) {
+      return '(' . $property_accessor . ' !== undefined ? ' . $properties[$_property_key]->getComponent('parser') . '(' . $property_accessor . ') : undefined)';
+    } 
+    
+    return $properties[$_property_key]->getComponent('parser') . '(' . $property_accessor . ')';
   }
 
   protected function generatePropertyParserLine($key, $value) {
@@ -163,6 +192,16 @@ trait PropertiesGenerator {
    * @return string
    */
   protected function generatePropertiesParser(array $properties, $type_name, $target_type_name, $mapping = NULL) {
+    if (!isset($mapping)) {
+      $mapping = $this->getDefaultMapping($properties);
+    }
+
+    if (is_string($mapping)) {
+      if (isset($properties[$mapping . '?'])) {
+        return '(t: ' . $type_name . '): ' . $target_type_name . " | undefined => " . $this->generatePropertiesParserContent($properties, $mapping);
+      }
+    }
+    
     return '(t: ' . $type_name . '): ' . $target_type_name . " => " . $this->generatePropertiesParserContent($properties, $mapping);
   }
 
@@ -172,7 +211,7 @@ trait PropertiesGenerator {
     }
 
     if (is_string($mapping)) {
-      if (isset($properties[$mapping])) {
+      if (isset($properties[$mapping]) || isset($properties[$mapping . '?'])) {
         return $this->generatePropertyParser($properties, $mapping);
       } else {
         $mapping = [$mapping];
@@ -183,7 +222,7 @@ trait PropertiesGenerator {
 
     foreach ($mapping as $property_target_key => $property_key) {
       if (is_numeric($property_target_key)) {
-        if (is_string($property_key) && isset($properties[$property_key])) {
+        if (is_string($property_key) && (isset($properties[$property_key]) || isset($properties[$property_key . '?']))) {
           $result[] = $this->generatePropertyParserLine($property_key, $this->generatePropertyParser($properties, $property_key));
         } else {
           if (is_string($property_key)) {
@@ -193,7 +232,7 @@ trait PropertiesGenerator {
           }
         }
       } else {
-        if (is_string($property_key) && isset($properties[$property_key])) {
+        if (is_string($property_key) && (isset($properties[$property_key]) || isset($properties[$property_key . '?']))) {
           $result[] = $this->generatePropertyParserLine($property_target_key, $this->generatePropertyParser($properties, $property_key));
         } else {
           if (is_string($property_key)) {
@@ -220,6 +259,7 @@ trait PropertiesGenerator {
 
     $guards = [];
 
+    // If the mapping contains other objects than properties, run those guards first.
     if (!is_string($mapping)) {
       foreach ($mapping as $property_target_key => $property_key) {
         if (!is_numeric($property_target_key)) {
@@ -242,17 +282,26 @@ trait PropertiesGenerator {
     }
 
     foreach ($properties as $property_key => $property) {
-      if (!is_string($property)) {
-        $guard = $property->getComponent('guard');
-        if (!$guard) {
-          continue;
+      if (is_string($property)) {
+        if (substr($property_key, -1, 1) != '?' && !in_array('undefined', array_map('trim', explode('|', $property)))) {
+          $guards[] = '(t.' . $property_key . ' !== undefined)';
         }
+      } else {
+        if (substr($property_key, -1, 1) != '?') {
+          $guards[] = '(t.' . $property_key . ' !== undefined)';
 
-        $guards[] = '(t.' . $property_key . ' !== undefined)';
-        $guards[] = $guard . '(t.' . $property_key . ')';
+          $guard = $property->getComponent('guard');
+          if ($guard) {
+            $guards[] = $guard . '(t.' . $property_key . ')';
+          }          
+        } else {
+          $guard = $property->getComponent('guard');
+          if ($guard) {
+            $guards[] = '((t.' . substr($property_key, 0, -1) . ' === undefined) || ' . $guard . '(t.' . substr($property_key, 0, -1) . '))';
+          }
+        }
       }
     }
-
 
     return $guards ? implode (' && ', $guards) : 'true';
   }
@@ -273,13 +322,21 @@ trait PropertiesGenerator {
     );
 
     if ($settings->generateParser()) {
-      $target_type = $componentResult->setComponent(
-        'target_type',
-        !is_string($mapping) ? $result->setComponent(
-          'types/' . $target_type_name,
-          'type ' . $target_type_name . ' = ' . $this->generatePropertiesTargetObject($properties, $mapping)
-        ) : $this->generatePropertiesTargetObject($properties, $mapping)
-      );
+      if (is_string($mapping) && (isset($properties[$mapping]) || isset($properties[$mapping . '?']))) {
+        $optional = isset($properties[$mapping . '?']);
+        $target_type = $componentResult->setComponent(
+          'target_type',
+          $optional ? ($this->generatePropertiesTargetObject($properties, $mapping) . ' | undefined') : $this->generatePropertiesTargetObject($properties, $mapping)
+        );  
+      } else {
+        $target_type = $componentResult->setComponent(
+          'target_type',
+          $result->setComponent(
+            'types/' . $target_type_name,
+            'type ' . $target_type_name . ' = ' . $this->generatePropertiesTargetObject($properties, $mapping)
+          )
+        );  
+      }
 
       $parser = $componentResult->setComponent(
         'parser',
