@@ -121,6 +121,21 @@ class EntityGenerator extends GeneratorBase {
       }
     }
 
+    if (!$this->getBundles($object)) {
+      $field_definitions = $this->entityFieldManager->getFieldDefinitions($object->id(), $object->id());
+      foreach ($field_definitions as $key => $field_definition) {
+        if ($field_definition->isInternal()) {
+          continue;
+        }
+
+        if (isset($base_field_definitions[$key])) {
+          continue;
+        }
+
+        $properties[$key] = $this->generator->generate($field_definition, $settings, $result);
+      }
+    }
+
     return $properties;
   }
 
