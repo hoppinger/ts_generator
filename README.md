@@ -8,6 +8,10 @@ This is a Drupal module, that generates Typescript type definitions for certain 
 composer require hoppinger/ts_generator
 ```
 
+## Versions
+
+Version 2.0.0 is Drupal 9 compatible.
+
 ## Usage
 
 The generator runs as a Drush command that needs a configuration file. 

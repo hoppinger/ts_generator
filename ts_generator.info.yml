@@ -3,5 +3,6 @@ type: module
 description: Generate TypeScript code based on the REST Resources
 package: Hoppinger
 core: 8.x
+Add core_version_requirement: ^8 || ^9
 dependencies:
   - rest
