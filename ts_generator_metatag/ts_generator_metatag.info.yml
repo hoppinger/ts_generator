@@ -3,6 +3,7 @@ type: module
 description: Generate TypeScript code for metatag
 package: Hoppinger
 core: 8.x
+Add core_version_requirement: ^8 || ^9
 dependencies:
   - ts_generator
   - metatag
