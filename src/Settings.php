@@ -18,7 +18,7 @@ class Settings {
   public static function loadFile($filename) {
     $data = Yaml::parseFile($filename);
 
-    return new static($data);
+    return new self($data);
   }
 
   public static function defaultData() {
